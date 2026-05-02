@@ -26,7 +26,7 @@
       <span style="color:var(--gold)">Mon</span>
     </h1>
     <p class="section-body" style="margin-top:1rem;">
-      [Describe what Mon means in your context — is it Pokémon, Digimon, a general category? Add your content here.]
+      Pokémon, Digimon, collectibles — the Mon side of the hobby. Proxy decks, format deep-dives, and card design projects.
     </p>
   </div>
 </div>
@@ -36,14 +36,99 @@
 <div class="section">
   <p class="section-label reveal">// Content</p>
   <h2 class="section-title reveal">Mon<br><span style="color:var(--gold)">Content</span></h2>
-  <p class="section-body reveal">
-    [This section is your space for Mon-related content — articles, tier lists, collection spotlights, competitive analysis, or whatever angle you take on the subject.]
+
+  <!-- Post grid — auto-populated from posts.json -->
+  <div id="mon-grid" style="
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  "></div>
+
+  <!-- Empty state -->
+  <p id="mon-empty" class="section-body" style="display:none; color: var(--muted);">
+    No posts yet — check back soon.
   </p>
 </div>
 
 <footer>
   <p>© 2025 [YourName] — All rights reserved</p>
 </footer>
+
 <script src="js/main.js"></script>
+<script>
+  fetch('blog/posts.json')
+    .then(r => r.json())
+    .then(posts => {
+      const grid = document.getElementById('mon-grid');
+      const empty = document.getElementById('mon-empty');
+
+      if (!posts || posts.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+
+      posts.forEach(post => {
+        const card = document.createElement('a');
+        card.href = 'blog/' + post.file;
+        card.style.cssText = `
+          display: block;
+          background: var(--card-bg, #12121f);
+          border: 1px solid var(--card-border, #2a2a45);
+          padding: 1.5rem;
+          text-decoration: none;
+          color: inherit;
+          transition: border-color 0.2s;
+        `;
+        card.onmouseenter = () => card.style.borderColor = 'var(--gold, #c8a84b)';
+        card.onmouseleave = () => card.style.borderColor = 'var(--card-border, #2a2a45)';
+
+        const tagsHTML = (post.tags || []).map(t => `
+          <span style="
+            font-family: 'Syne Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--gold, #c8a84b);
+            border: 1px solid var(--gold, #c8a84b);
+            padding: 0.2rem 0.5rem;
+            margin-right: 0.4rem;
+          ">${t}</span>
+        `).join('');
+
+        card.innerHTML = `
+          <div style="margin-bottom: 0.8rem;">${tagsHTML}</div>
+          <h3 style="
+            font-family: 'Big Shoulders Display', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text, #e8e8f0);
+            margin-bottom: 0.6rem;
+            line-height: 1.1;
+          ">${post.title}</h3>
+          <p style="
+            font-size: 0.9rem;
+            color: var(--muted, #6868a0);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+          ">${post.description}</p>
+          <span style="
+            font-family: 'Syne Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            color: var(--gold, #c8a84b);
+            text-transform: uppercase;
+          ">Read more →</span>
+        `;
+
+        grid.appendChild(card);
+      });
+    })
+    .catch(() => {
+      document.getElementById('mon-empty').style.display = 'block';
+    });
+</script>
+
 </body>
 </html>
