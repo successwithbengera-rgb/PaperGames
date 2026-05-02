@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess Goat — Proxy Deck | PaperGames</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Syne:wght@400;600;700&family=Syne+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    :root {
+      --bg: #08080f;
+      --accent: #c8a84b;
+      --muted: #6868a0;
+      --card-bg: #12121f;
+      --card-border: #2a2a45;
+      --text: #e8e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* Nav */
+    nav {
+      padding: 24px 0 16px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 56px;
+    }
+    nav a {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--accent); }
+    nav .sep { color: var(--card-border); margin: 0 10px; }
+
+    /* Header */
+    .post-header { margin-bottom: 48px; }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 4px 10px;
+      border: 1px solid var(--card-border);
+      color: var(--muted);
+      background: var(--card-bg);
+    }
+    .tag.game { border-color: var(--accent); color: var(--accent); }
+
+    .post-title {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .post-title span { color: var(--accent); }
+
+    .post-sub {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 28px;
+    }
+
+    .post-intro {
+      font-size: 1.1rem;
+      color: #b0b0cc;
+      max-width: 680px;
+      border-left: 2px solid var(--accent);
+      padding-left: 20px;
+    }
+
+    /* Deck image */
+    .deck-image-block {
+      margin: 48px 0;
+    }
+    .deck-image-block img {
+      width: 100%;
+      display: block;
+      border: 1px solid var(--card-border);
+    }
+    .image-caption {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 10px;
+    }
+
+    /* Sections */
+    .post-section {
+      margin-bottom: 56px;
+    }
+    .section-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+    .post-section p {
+      color: #9999bb;
+      margin-bottom: 16px;
+    }
+    .post-section p:last-child { margin-bottom: 0; }
+
+    /* Divider */
+    hr.rule {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 48px 0;
+    }
+
+    /* Tier grid */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    @media (max-width: 600px) { .tier-grid { grid-template-columns: 1fr; } }
+
+    .tier-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 20px;
+    }
+    .tier-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 10px;
+    }
+    .tier-s { color: #e8c060; }
+    .tier-a { color: #c084fc; }
+    .tier-b { color: #60a5fa; }
+    .tier-c { color: var(--muted); }
+    .tier-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    .tier-card ul li {
+      font-size: 0.82rem;
+      color: #9999bb;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(42,42,69,0.5);
+    }
+    .tier-card ul li:last-child { border-bottom: none; }
+    .tier-card ul li strong { color: var(--text); font-weight: 600; }
+
+    /* Extra deck grid */
+    .extra-deck-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .extra-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 16px;
+    }
+    .extra-card-name {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .extra-card-stat {
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .extra-card-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Synergy list */
+    .synergy-block {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .synergy-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-left: 3px solid var(--accent);
+      padding: 16px 20px;
+    }
+    .synergy-name {
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .synergy-desc {
+      font-size: 0.83rem;
+      color: #9090b0;
+      line-height: 1.55;
+    }
+
+    /* Proxy notes */
+    .proxy-notes {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 28px;
+      margin-top: 24px;
+    }
+    .proxy-notes p {
+      margin-bottom: 12px;
+      color: #9999bb;
+      font-size: 0.9rem;
+    }
+    .proxy-notes p:last-child { margin-bottom: 0; }
+    .proxy-count {
+      display: inline-block;
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.65rem;
+      background: rgba(200,168,75,0.12);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 3px 10px;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    /* Quote block */
+    .pull-quote {
+      border-left: 3px solid var(--accent);
+      padding: 16px 24px;
+      margin: 32px 0;
+      font-family: 'Big Shoulders Display', sans-serif;
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .pull-quote span { color: var(--accent); }
+
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--card-border);
+      padding: 10px 18px;
+      transition: all 0.2s;
+      margin-top: 64px;
+      display: inline-flex;
+    }
+    .back-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <nav>
+      <a href="../index.html">Home</a>
+      <span class="sep">/</span>
+      <a href="../proxy.html">Proxy</a>
+      <span class="sep">/</span>
+      <a href="#">Chess Goat</a>
+    </nav>
+
+    <!-- HEADER -->
+    <div class="post-header">
+      <div class="tag-row">
+        <span class="tag game">Yu-Gi-Oh!</span>
+        <span class="tag">Mirror Format</span>
+        <span class="tag">Goat Format</span>
+        <span class="tag">40 Cards</span>
+        <span class="tag">2025-05</span>
+      </div>
+      <h1 class="post-title">Chess<br><span>Goat</span></h1>
+      <p class="post-sub">A Symmetrical Skill-First Yu-Gi-Oh! Format · Singleton · Mirror · No Deckbuilding</p>
+      <p class="post-intro">
+        Two players. One shared deck. No deckbuilding. No matchups. Just decisions. Chess Goat is the closest Yu-Gi-Oh gets to chess — and this is the proxy set that makes it real.
+      </p>
+    </div>
+
+    <!-- MAIN DECK IMAGE -->
+    <div class="deck-image-block">
+      <img src="../images/maindeck.png" alt="Chess Goat Main Deck — 40 Card Singleton" />
+      <p class="image-caption">Main Deck — 40 Cards — 17 Monsters / 14 Spells / 9 Traps</p>
+    </div>
+
+    <!-- WHAT IS THIS -->
+    <div class="post-section">
+      <p class="section-label">01 — Concept</p>
+      <h2 class="section-title">What Is Chess Goat?</h2>
+      <p>
+        Chess Goat is a custom-designed mirror format built on the bones of Goat Format (circa 2005). It is not a trading card game. There is no deckbuilding, no card acquisition, no cycling content. It is a closed competitive system — one shared 40-card singleton deck that both players draw from simultaneously.
+      </p>
+      <p>
+        The closest analogy is chess. Identical starting forces. No matchup variance. Outcome determined entirely by how well you play the game state in front of you.
+      </p>
+
+      <div class="pull-quote">
+        If both players have <span>identical tools</span> — what separates them?
+      </div>
+
+      <p>
+        Goat Format was chosen as the base layer for a reason: its slower pace rewards resource management over raw power, its card text is simple enough that new players can get moving immediately, and its hidden-information trap layer creates a bluffing dimension that pure board games lack. Chess Goat takes that foundation and strips out every source of high-impact variance — leaving a format where skill accumulates over time, not explodes in a single draw.
+      </p>
+    </div>
+
+    <hr class="rule" />
+
+    <!-- WHY I BUILT IT -->
+    <div class="post-section">
+      <p class="section-label">02 — Why</p>
+      <h2 class="section-title">Why I Built This</h2>
+      <p>
+        Standard Yu-Gi-Oh is rock-paper-scissors with optimization. Two good players with a bad matchup can't produce a fair game. That's fine for tournaments — terrible for a casual showdown where you want to actually find out who the better player is.
+      </p>
+      <p>
+        Chess Goat eliminates all of that. No matchups exist. No archetype advantage. No "I would've won if I'd drawn my out." Every variable the format controls is gone. What remains is the one variable that can't be equalized: decision quality.
+      </p>
+      <p>
+        The proxy set exists because this format deserves a physical presence. Sitting across from someone and playing it on paper, with real cards shuffled into a real 40-card stack, hits differently than any digital sim.
+      </p>
+    </div>
+
+    <hr class="rule" />
+
+    <!-- DECK LIST -->
+    <div class="post-section">
+      <p class="section-label">03 — Decklist</p>
+      <h2 class="section-title">The Main Deck</h2>
+      <p>
+        40 cards. Singleton throughout. Every card earns its slot through a defined functional role — not raw power, not nostalgia. The deck is a system. Understanding the system is more important than knowing individual card ratings.
+      </p>
+
+      <div class="tier-grid">
+
+        <div class="tier-card">
+          <p class="tier-label tier-s">S Tier — Game-Defining</p>
+          <ul>
+            <li><strong>Black Luster Soldier - Envoy</strong> — Apex win condition</li>
+            <li><strong>Tsukuyomi</strong> — Flip loop engine, highest skill ceiling</li>
+            <li><strong>Scapegoat</strong> — Defense anchor + TER gateway</li>
+            <li><strong>Mirror Force</strong> — Mass removal, creates fear structure</li>
+            <li><strong>Torrential Tribute</strong> — Board wipe, timing-dependent</li>
+          </ul>
+        </div>
+
+        <div class="tier-card">
+          <p class="tier-label tier-a">A Tier — High Impact</p>
+          <ul>
+            <li><strong>Chaos Sorcerer</strong> — Non-destruction banish</li>
+            <li><strong>Airknight Parshath</strong> — Trample + draw</li>
+            <li><strong>Zaborg the Thunder Monarch</strong> — Board-breaker on summon</li>
+            <li><strong>Metamorphosis</strong> — Opens the Extra Deck sub-game</li>
+            <li><strong>Brain Control</strong> — Highest single-play ceiling</li>
+            <li><strong>Creature Swap</strong> — Punishes dominant boards</li>
+            <li><strong>Solemn Judgment</strong> — Hard counter, half LP cost</li>
+            <li><strong>Ring of Destruction</strong> — Removal + burn, BLS answer</li>
+            <li><strong>Call of the Haunted</strong> — Recursion, high risk/reward</li>
+            <li><strong>Premature Burial</strong> — High upside, interruptible</li>
+            <li><strong>Sangan</strong> — Converts removal into search advantage</li>
+            <li><strong>Heavy Storm</strong> — Nuclear back-row, hits yours too</li>
+            <li><strong>Kycoo the Ghost Destroyer</strong> — Direct GY disruption</li>
+          </ul>
+        </div>
+
+        <div class="tier-card">
+          <p class="tier-label tier-b">B Tier — Strong Utility</p>
+          <ul>
+            <li><strong>Berserk Gorilla</strong> — 2000 ATK, forces real blocks</li>
+            <li><strong>Blade Knight</strong> — Resilient, endgame-relevant</li>
+            <li><strong>Breaker the Magical Warrior</strong> — S/T removal on a body</li>
+            <li><strong>Mystic Tomato</strong> — Search engine on death</li>
+            <li><strong>Spirit Reaper</strong> — Indestructible wall</li>
+            <li><strong>D.D. Warrior Lady</strong> — Commitment banish removal</li>
+            <li><strong>Dekoichi</strong> — Flip draw, Tsukuyomi target</li>
+            <li><strong>Magical Merchant</strong> — Mill + draw, GY setup</li>
+            <li><strong>Enemy Controller</strong> — Position change or tribute steal</li>
+            <li><strong>Sakuretsu Armor</strong> — Reliable spot removal</li>
+            <li><strong>Phoenix Wing Wind Blast</strong> — Bounce + Serpent synergy</li>
+            <li><strong>Swords of Revealing Light</strong> — Info + attack stop</li>
+            <li><strong>Mystical Space Typhoon</strong> — Quick-play back-row answer</li>
+            <li><strong>Nobleman of Crossout</strong> — Banish + deck removal</li>
+          </ul>
+        </div>
+
+        <div class="tier-card">
+          <p class="tier-label tier-c">C Tier — Structural Glue</p>
+          <ul>
+            <li><strong>Skelengel</strong> — Secondary flip draw</li>
+            <li><strong>Jar of Greed</strong> — Reactive thin draw</li>
+            <li><strong>Dust Tornado</strong> — S/T removal, slow timing</li>
+            <li><strong>Monster Reincarnation</strong> — Recursion, feeds Serpent</li>
+            <li><strong>Book of Taiyou</strong> — Triggers flips without Tsukuyomi</li>
+            <li><strong>Upstart Goblin</strong> — Pure cycle, zero risk</li>
+            <li><strong>Sinister Serpent</strong> — Self-returning discard fodder</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <!-- EXTRA DECK -->
+    <div class="post-section">
+      <p class="section-label">04 — Extra Deck</p>
+      <h2 class="section-title">The Extra Deck</h2>
+
+      <div class="deck-image-block">
+        <img src="../images/sidedeck.png" alt="Chess Goat Extra Deck — 9 Fusion Monsters" />
+        <p class="image-caption">Extra Deck — 9 Fusion Monsters — All accessed via Metamorphosis</p>
+      </div>
+
+      <p>
+        The Extra Deck is not an afterthought. It's a strategic sub-system. Every monster in the main deck has a fusion counterpart — Metamorphosis turns this into a constant sub-game of which monster to tribute, which fusion to access, and whether the tempo cost is worth it.
+      </p>
+      <p>
+        You never have to touch the Extra Deck. Ignoring it completely is a valid play pattern. But ignoring it means surrendering depth — and in a skill-first format, that matters.
+      </p>
+
+      <div class="extra-deck-grid">
+        <div class="extra-card">
+          <p class="extra-card-name">Thousand-Eyes Restrict</p>
+          <p class="extra-card-stat">0 ATK / 0 DEF — Level 1</p>
+          <p class="extra-card-desc">Freezes all monsters. Absorbs one opponent monster. The apex fusion. Access via Scapegoat token — the highest-ceiling line in the format.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Dark Balter the Terrible</p>
+          <p class="extra-card-stat">2000 ATK / 800 DEF — Level 4</p>
+          <p class="extra-card-desc">Negates spell and trap activations. Shuts off the entire back row while alive. Access via Berserk Gorilla.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Ryu Senshi</p>
+          <p class="extra-card-stat">2000 ATK / 800 DEF — Level 4</p>
+          <p class="extra-card-desc">Negates trap activations. Combat-focused countermeasure. Punches through trap-heavy boards.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Reaper on the Nightmare</p>
+          <p class="extra-card-stat">800 ATK / 3000 DEF — Level 3</p>
+          <p class="extra-card-desc">Indestructible by battle. Discards from opponent's hand on attack. Pure control upgrade via Spirit Reaper tribute.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Fiend Skull Dragon</p>
+          <p class="extra-card-stat">2000 ATK / 1000 DEF — Level 4</p>
+          <p class="extra-card-desc">Immune to effect damage and trap cards. Clean, uninterruptible attack pressure.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Gatling Dragon</p>
+          <p class="extra-card-stat">2600 ATK / 1200 DEF — Level 4</p>
+          <p class="extra-card-desc">Flip coins to destroy monsters. Highest ATK in the Extra Deck. Risk/reward removal — can clear everything or nothing.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Dragoness the Wicked Knight</p>
+          <p class="extra-card-stat">1700 ATK / 1500 DEF — Level 3</p>
+          <p class="extra-card-desc">Destroys a Spell/Trap when it destroys a monster in battle. Aggressive back-row clearance.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Dark Blade the Dragon Knight</p>
+          <p class="extra-card-stat">2200 ATK / 1500 DEF — Level 4</p>
+          <p class="extra-card-desc">Immune to spell effects. Niche but powerful when spells dominate the game state.</p>
+        </div>
+        <div class="extra-card">
+          <p class="extra-card-name">Darkfire Dragon</p>
+          <p class="extra-card-stat">1500 ATK / 1250 DEF — Level 4</p>
+          <p class="extra-card-desc">The bridge fusion. Lower ceiling but accessible when stronger options aren't optimal.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <!-- HOW IT PLAYS -->
+    <div class="post-section">
+      <p class="section-label">05 — Gameplay</p>
+      <h2 class="section-title">How It Plays</h2>
+      <p>
+        Games move in three phases. The opening (turns 1–4) is about gathering information and building structure — set flip monsters, establish face-down presence, don't overcommit. The midgame (turns 5–10) is where games are actually decided — boards are active, resources are flowing, and every decision has weight. Late game is a tight resource war. Hand sizes shrink. Card tracking becomes decisive.
+      </p>
+      <p>
+        No single play wins the game. Position accumulates. The player who makes consistently better decisions across 15 turns wins — not the player who opened best.
+      </p>
+      <p>
+        Three win paths exist simultaneously: sustained life point pressure, resource exhaustion (opponent runs out of answers), and deck-out in ultra-long games. Advanced players keep all three in view at once.
+      </p>
+
+      <div class="synergy-block">
+        <div class="synergy-item">
+          <p class="synergy-name">The Tsukuyomi Loop</p>
+          <p class="synergy-desc">Tsukuyomi returns to hand at end of turn. Summon it again next turn, reset a flip monster face-down, trigger their effect again on attack or with Book of Taiyou. Repeated draw advantage over multiple turns — the format's central incremental engine.</p>
+        </div>
+        <div class="synergy-item">
+          <p class="synergy-name">Scapegoat → Metamorphosis → Thousand-Eyes Restrict</p>
+          <p class="synergy-desc">Activate Scapegoat on opponent's end phase. Your main phase: Metamorphosis tributes a Level 1 token → TER. All monsters freeze. One opponent monster gets absorbed. Three tokens still block. The highest-ceiling single turn available.</p>
+        </div>
+        <div class="synergy-item">
+          <p class="synergy-name">Sinister Serpent Discard Engine</p>
+          <p class="synergy-desc">Serpent returns to hand each standby phase after being discarded. Feeds Phoenix Wing Wind Blast and Monster Reincarnation at zero long-term cost. A persistent outlet that makes two cards effectively free.</p>
+        </div>
+        <div class="synergy-item">
+          <p class="synergy-name">Mystic Tomato Search Network</p>
+          <p class="synergy-desc">On battle destruction, search any DARK monster with 1500 ATK or less. The choice of target is the skill expression: Sangan for toolbox access, Spirit Reaper for a wall, Tsukuyomi to reset the board, Sinister Serpent for discard fodder. Every Tomato trade is even on cards but uneven on value.</p>
+        </div>
+        <div class="synergy-item">
+          <p class="synergy-name">Creature Swap + Scapegoat Token</p>
+          <p class="synergy-desc">Trade a worthless sheep token for the opponent's best monster. Net +1 in quality with a card that was already generating free bodies. One of the cleanest punish lines in the format.</p>
+        </div>
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <!-- PROXY NOTES -->
+    <div class="post-section">
+      <p class="section-label">06 — Proxy Notes</p>
+      <h2 class="section-title">Building the Proxy Set</h2>
+      <div class="proxy-notes">
+        <p class="proxy-count">49 Cards Total — 40 Main / 9 Extra</p>
+        <p>
+          Singleton throughout — one copy of every card, no duplicates. This is also the only proxy set where the card art matters beyond aesthetics: since both players draw from the same physical deck, sleeves are required and the back of every card must be identical. Print on white cardstock, sleeve in matching opaques.
+        </p>
+        <p>
+          All 40 main deck cards and all 9 Extra Deck fusions need to be printed. The Extra Deck cards are accessed through Metamorphosis and sit face-down in the Extra Deck zone — they don't go into the main stack.
+        </p>
+        <p>
+          For the proxies: high-resolution card images sourced from YGOPRODECK or similar. Print at standard card size (63mm × 88mm). The purple border on the main deck visual above was added for the photo — actual print files use standard card-appropriate borders.
+        </p>
+        <p>
+          This format works best with two identical physical sets printed — one per player to reference during games, with the shared play deck shuffled between matches.
+        </p>
+      </div>
+    </div>
+
+    <!-- BACK LINK -->
+    <a href="../proxy.html" class="back-link">← Back to Proxy Decks</a>
+
+  </div>
+</body>
+</html>
